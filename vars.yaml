@@ -1,16 +1,16 @@
 # Vars for Proxmox Clients
 api_user: 'root@pam' # User of Proxmox API | Web Login User
 api_password: 'Pa$$w0rd' # Password of user above
-api_host: 'MAS'
-clone_name_srv: 'TemplateWindowsServer' # Source
-clone_name_cli: 'TemplateWindowsClient' 
-clone_app_srv: 'TemplateAppli'
-srvapp_var: 'false'
-new_srv_name: 'CloneSrvTest' # Destination
-new_cli_name: 'CloneCliTest'
-new_app_srv: 'CloneAppTest'
-node: 'MAS'
-ip_loop: 10.0.0.12
+api_host: 'MAS' # API Host Node
+clone_name_srv: 'TemplateWindowsServer' # Name of the Windows Server Template
+clone_name_cli: 'TemplateWindowsClient' # Name of the Windows Client Template
+clone_app_srv: 'TemplateAppli' # Name of the Windows Server for various Apps
+srvapp_var: 'false' # True or False if wanting to clone the Apps SRV
+new_srv_name: 'CloneSrvTest' # Name of the cloned Windows Server
+new_cli_name: 'CloneCliTest' # Name of the cloned Windows Client
+new_app_srv: 'CloneAppTest' # Name of the cloned Windows Server for various Apps
+node: 'MAS' # Proxmox Node
+ip_loop: 10.0.0.12 # IP of the VMs
 ip_loop_2: 10.0.0.13
 # Vars WIN SRV
 dc_hostname: 'SRV-DC1'
