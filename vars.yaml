@@ -4,9 +4,14 @@ api_password: 'Pa$$w0rd'
 api_host: 'MAS'
 clone_name_srv: 'TemplateWindowsServer' # Source
 clone_name_cli: 'TemplateWindowsClient' 
+clone_app_srv: 'TemplateAppli'
+srvapp_var: 'true'
 new_srv_name: 'CloneSrvTest' # Destination
 new_cli_name: 'CloneCliTest'
+new_app_srv: 'CloneAppTest'
 node: 'MAS'
+ip_loop: 10.0.0.12
+ip_loop_2: 10.0.0.13
 # Vars WIN SRV
 dc_hostname: 'SRV-DC1'
 domain_name: 'pipo.miel'

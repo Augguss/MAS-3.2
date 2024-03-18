@@ -39,21 +39,21 @@
 
 ---
 - hosts: proxmox
-  vars:
-    api_user: 'root@pam'
-    api_password: 'Pa$$w0rd'
-    test_var: 'true'
+  gather_facts: no
+  vars_files:
+    - vars.yaml
   tasks:
   # Clone VM with source vmid and target newid and raw format
-  - name: List VMs on Host
-    community.general.proxmox_vm_info:
-      api_host: MAS
+  - name: Clone VM Client with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
       api_user: "{{ api_user }}"
       api_password: "{{ api_password }}"
-      api_token_id: root@pam!API_MAS_Token
-      api_token_secret: 6e6226a1-7921-49ac-9217-51ef0c6b5779
-      node: MAS
-    when: test_var is match("true")
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_app_srv }}" # The VM source
+      name: "{{ new_app_srv }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+    when: srvapp_var is match("true")
 
 
 - name: Wait for Proxmox VM to respond to SSH
