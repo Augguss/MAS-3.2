@@ -4,15 +4,15 @@
   vars_files:
     - vars.yaml
   tasks:
-  # Clone VM with source vmid and target newid and raw format
-  - name: List VMs on Host
-    community.general.proxmox_vm_info:
-      api_host: MAS
+  - name: Clone VM with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
       api_user: "{{ api_user }}"
       api_password: "{{ api_password }}"
-      api_token_id: root@pam!API_MAS_Token
-      api_token_secret: 6e6226a1-7921-49ac-9217-51ef0c6b5779
+      api_host: MAS
+      clone: WinSRVTemplateTest # The VM source
+      name: CloneTest  # The target VM name
       node: MAS
+      full: no
     when: test_var is match("true")
 
   - name: Retrieve information about specific VM by vmid and get current configuration
@@ -23,16 +23,16 @@
       node: MAS
       vmid: 100
 
-  - name: Clone VM with only source VM name - Linked Clone
-    community.general.proxmox_kvm:
+  # Clone VM with source vmid and target newid and raw format
+  - name: List VMs on Host
+    community.general.proxmox_vm_info:
+      api_host: MAS
       api_user: "{{ api_user }}"
       api_password: "{{ api_password }}"
-      api_host: MAS
-      clone: WinSRVTemplateTest # The VM source
-      name: CloneTest  # The target VM name
+      api_token_id: root@pam!API_MAS_Token
+      api_token_secret: 6e6226a1-7921-49ac-9217-51ef0c6b5779
       node: MAS
-      full: no
-      timeout: 500  # Note: The task can take a while. Adapt
+
 ```
 
 ######### CONDITION WHEN ###########

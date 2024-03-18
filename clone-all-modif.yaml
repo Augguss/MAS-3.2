@@ -99,6 +99,17 @@
         Add-DhcpServerv4ExclusionRange -ScopeID 10.0.0.0 -StartRange 10.0.0.1 -EndRange 10.0.0.15
         Set-DhcpServerv4OptionValue -OptionID 3 -Value 10.0.0.1 -ScopeID 10.0.0.0 -ComputerName SRV-DC1
         Set-DhcpServerv4OptionValue -DnsDomain pipo.miel -DnsServer 10.0.0.12
+        Start-Sleep -Seconds 10
+  - name: Install DHCP with Powershell
+    ansible.windows.win_powershell:
+      script: |
+        $Username = 'pipo.miel\Administrateur'
+        $Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+        
+        Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+            Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
+        }
   - name: Reboot with powershell
     ansible.windows.win_powershell:
       script: |
@@ -124,6 +135,31 @@ Get-DhcpServerv4FreeIPAddress -ComputerName "SRV-TEMPLATE" -ScopeId 10.0.0.0 -Nu
 # ERREUR DHCP #
 
 changed: [SRV-Template] => {"changed": true, "debug": [], "error": [{"category_info": {"activity": "Set-DhcpServerv4OptionValue", "category": "InvalidArgument", "category_id": 5, "reason": "CimException", "target_name": "SRV-DC1", "target_type": "root/Microsoft/Windows/DHCP/PS_DhcpServerv4OptionValue"}, "error_details": null, "exception": {"help_link": null, "hresult": -2146233088, "inner_exception": null, "message": "10.0.0.12 n’est pas un serveur DNS valide.", "source": null, "type": "Microsoft.Management.Infrastructure.CimException"}, "fully_qualified_error_id": "WIN32 87,Set-DhcpServerv4OptionValue", "output": "Set-DhcpServerv4OptionValue : 10.0.0.12 n’est pas un serveur DNS valide.\r\nAu caractère Ligne:4 : 1\r\n+ Set-DhcpServerv4OptionValue -DnsDomain pipo.miel -DnsServer 10.0.0.12\r\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidArgument : (SRV-DC1:root/Microsoft/...erv4OptionValue) \r\n[Set-DhcpServerv4OptionValue], CimException\r\n    + FullyQualifiedErrorId : WIN32 87,Set-DhcpServerv4OptionValue\r\n \r\n", "pipeline_iteration_info": [0, 1], "script_stack_trace": null, "target_object": "PS_DhcpServerv4OptionValue"}], "host_err": "", "host_out": "", "information": [], "output": [], "result": {}, "verbose": [], "warning": []}
+
+###################################################
+
+$Username = 'pipo.miel\Administrateur'
+$Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
+$Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+
+Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+    Get-Culture
+}
+
+Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+    Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
+}
+
+- name: Install DHCP with Powershell
+  ansible.windows.win_powershell:
+    script: |
+      $Username = 'pipo.miel\Administrateur'
+      $Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
+      $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+      
+      Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+          Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
+      }
 
 ###################################################
 inventory.cfg VM

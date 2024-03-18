@@ -1,0 +1,15 @@
+- hosts: wserver
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Install DHCP with Powershell
+    ansible.windows.win_powershell:
+      script: |
+        $Username = 'pipo.miel\Administrateur'
+        $Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+        
+        Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+            Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
+        }
