@@ -1,11 +1,11 @@
 # Vars for Proxmox Clients
-api_user: 'root@pam'
-api_password: 'Pa$$w0rd'
+api_user: 'root@pam' # User of Proxmox API | Web Login User
+api_password: 'Pa$$w0rd' # Password of user above
 api_host: 'MAS'
 clone_name_srv: 'TemplateWindowsServer' # Source
 clone_name_cli: 'TemplateWindowsClient' 
 clone_app_srv: 'TemplateAppli'
-srvapp_var: 'true'
+srvapp_var: 'false'
 new_srv_name: 'CloneSrvTest' # Destination
 new_cli_name: 'CloneCliTest'
 new_app_srv: 'CloneAppTest'

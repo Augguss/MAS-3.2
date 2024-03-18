@@ -22,6 +22,16 @@
       name: "{{ new_cli_name }}"  # The target VM name
       node: "{{ node }}"
       full: no
+  - name: Clone VM Client with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_app_srv }}" # The VM source
+      name: "{{ new_app_srv }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+    when: srvapp_var is match("true")    
   - name: Pause for 2 minutes to wait the VM Start
     ansible.builtin.pause:
       minutes: 5
