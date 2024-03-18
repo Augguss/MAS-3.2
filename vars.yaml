@@ -1,0 +1,21 @@
+# Vars for Proxmox Clients
+api_user: 'root@pam'
+api_password: 'Pa$$w0rd'
+api_host: 'MAS'
+clone_name_srv: 'TemplateWindowsServer' # Source
+clone_name_cli: 'TemplateWindowsClient' 
+new_srv_name: 'CloneSrvTest' # Destination
+new_cli_name: 'CloneCliTest'
+node: 'MAS'
+# Vars WIN SRV
+dc_hostname: 'SRV-DC1'
+domain_name: 'pipo.miel'
+recovery_password: 'Pa$$w0rd'
+# Vars DHCP Config
+dhcp_start_range: '10.0.0.1'
+dhcp_end_range: '10.0.0.254'
+subnet_mask: '255.255.255.0'
+scope_id: '10.0.0.0'
+exc_start_range: '10.0.0.1'
+exc_end_range: '10.0.0.15'
+dns_server: '10.0.0.2'

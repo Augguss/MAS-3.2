@@ -1,0 +1,68 @@
+```yaml
+---
+- hosts: proxmox
+  vars_files:
+    - vars.yaml
+  tasks:
+  # Clone VM with source vmid and target newid and raw format
+  - name: List VMs on Host
+    community.general.proxmox_vm_info:
+      api_host: MAS
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_token_id: root@pam!API_MAS_Token
+      api_token_secret: 6e6226a1-7921-49ac-9217-51ef0c6b5779
+      node: MAS
+    when: test_var is match("true")
+
+  - name: Retrieve information about specific VM by vmid and get current configuration
+    community.general.proxmox_vm_info:
+      api_host: MAS
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      node: MAS
+      vmid: 100
+
+  - name: Clone VM with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: MAS
+      clone: WinSRVTemplateTest # The VM source
+      name: CloneTest  # The target VM name
+      node: MAS
+      full: no
+      timeout: 500  # Note: The task can take a while. Adapt
+```
+
+######### CONDITION WHEN ###########
+
+---
+- hosts: proxmox
+  vars:
+    api_user: 'root@pam'
+    api_password: 'Pa$$w0rd'
+    test_var: 'true'
+  tasks:
+  # Clone VM with source vmid and target newid and raw format
+  - name: List VMs on Host
+    community.general.proxmox_vm_info:
+      api_host: MAS
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_token_id: root@pam!API_MAS_Token
+      api_token_secret: 6e6226a1-7921-49ac-9217-51ef0c6b5779
+      node: MAS
+    when: test_var is match("true")
+
+
+- name: Wait for Proxmox VM to respond to SSH
+  ansible.builtin.wait_for:
+    host: "10.0.0.12"
+    port: 22
+    delay: 10
+    timeout: 300
+    state: started
+  retries: 30
+  delay: 10
+  delegate_to: localhost

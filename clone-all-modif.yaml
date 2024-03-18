@@ -1,0 +1,274 @@
+---
+- hosts: proxmox
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Clone VM Server with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_name_srv }}" # The VM source
+      name: "{{ new_srv_name }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+  - name: Clone VM Client with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_name_cli }}" # The VM source
+      name: "{{ new_cli_name }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+  - name: Pause for 2 minutes to wait the VM Start
+    ansible.builtin.pause:
+      minutes: 5
+  - name: Start VM Server
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host    : "{{ api_host }}"
+      name        : "{{ new_srv_name }}"
+      node        : "{{ node }}"
+      state       : started
+  - name: Start VM Client
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host    : "{{ api_host }}"
+      name        : "{{ new_cli_name }}"
+      node        : "{{ node }}"
+      state       : started
+  - name: Wait for Proxmox VMs to respond to SSH
+    ansible.builtin.wait_for:
+      host: "{{ item }}"
+      port: 22
+      delay: 5
+      timeout: 500
+      state: started
+    retries: 30
+    delay: 10
+    delegate_to: localhost
+    loop:
+      - 10.0.0.12
+      - 10.0.0.13
+- hosts: wserver
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Change the hostname to DC1
+    ansible.windows.win_hostname:
+      name: "{{ dc_hostname }}"
+  - name: Reboot with powershell
+    ansible.windows.win_powershell:
+      script: |
+        shutdown /r /t 10
+  - name: Wait for Proxmox VMs to respond to SSH
+    ansible.builtin.wait_for:
+      host: "{{ item }}"
+      port: 22
+      delay: 30
+      timeout: 500
+      state: started
+    retries: 30
+    delay: 10
+    delegate_to: localhost
+    loop:
+      - 10.0.0.12
+  - name: Create Domain
+    win_domain: >
+      dns_domain_name="{{ domain_name }}"
+      safe_mode_password="{{ recovery_password }}"
+  - name: Install DHCP with Powershell
+    ansible.windows.win_powershell:
+      script: |
+        Add-DhcpServerv4Scope -name "MAS32" -StartRange 10.0.0.1 -EndRange 10.0.0.254 -SubnetMask 255.255.255.0 -State Active
+        Add-DhcpServerv4ExclusionRange -ScopeID 10.0.0.0 -StartRange 10.0.0.1 -EndRange 10.0.0.15
+        Set-DhcpServerv4OptionValue -OptionID 3 -Value 10.0.0.1 -ScopeID 10.0.0.0 -ComputerName SRV-DC1
+        Set-DhcpServerv4OptionValue -DnsDomain pipo.miel -DnsServer 10.0.0.2
+  - name: Reboot with powershell
+    ansible.windows.win_powershell:
+      script: |
+        Restart-Computer 
+
+##############################################################################################
+# DHCP Setup Powershell
+
+        Install-WindowsFeature DHCP -IncludeManagementTools
+        Add-DhcpServerv4Scope -name "MAS32" -StartRange {{ dhcp_start_range }} -EndRange {{ dhcp_end_range }} -SubnetMask {{ subnet_mask }} -State Active
+        Add-DhcpServerv4ExclusionRange -ScopeID {{ scope_id }} -StartRange {{ exc_start_range }} -EndRange {{ exc_end_range }}
+        Set-DhcpServerv4OptionValue -DnsDomain {{ domain_name }} -DnsServer {{ dns_server }}
+        Start-Service DHCPServer
+
+Install-WindowsFeature DHCP -IncludeManagementTools
+Add-DhcpServerv4Scope -name "Corpnet" -StartRange 10.0.0.1 -EndRange 10.0.0.254 -SubnetMask 255.255.255.0 -State Active
+Add-DhcpServerv4ExclusionRange -ScopeID 10.0.0.0 -StartRange 10.0.0.1 -EndRange 10.0.0.15
+Set-DhcpServerv4OptionValue -OptionID 3 -Value 10.0.0.1 -ScopeID 10.0.0.0 -ComputerName SRV-TEMPLATE
+Set-DhcpServerv4OptionValue -DnsDomain pipo.miel -DnsServer 10.0.0.2
+
+Get-DhcpServerv4FreeIPAddress -ComputerName "SRV-TEMPLATE" -ScopeId 10.0.0.0 -NumAddress 300
+
+###################################################
+inventory.cfg VM
+
+[ansiblectrl]
+10.0.0.11 ansible_user=cpnv
+
+[proxmox]
+10.0.0.10 ansible_user=root
+
+[windows]
+SRV-Template ansible_host=10.0.0.12
+Cli-Template ansible_host=10.0.0.13
+
+[wserver]
+SRV-Template ansible_host=10.0.0.12
+
+[windows:vars]
+ansible_user=ansible
+ansible_password=Passw0rd123
+ansible_connection=ssh
+ansible_shell_type=cmd
+
+####
+# 09.03.2024 - DHCP NOK for sure
+####
+
+###################################################
+
+inventory.cfg physique
+
+[ansiblectrl]
+10.229.37.201 ansible_user=cpnv
+
+[proxmox]
+10.229.37.200 ansible_user=root
+
+[windows]
+SRV-Template ansible_host=10.229.37.202
+Cli-Template ansible_host=10.229.37.203
+
+[wserver]
+SRV-Template ansible_host=10.229.37.202
+
+[windows:vars]
+ansible_user=ansible
+ansible_password=Passw0rd123
+ansible_connection=ssh
+ansible_shell_type=cmd
+
+
+- hosts: windows
+  gather_facts: no
+  tasks:
+  - name: test connection
+    ansible.windows.win_ping:
+
+
+####################### BACKUP PLAYBOOK ##########################################################################
+
+---
+- hosts: proxmox
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Clone VM Server with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_name_srv }}" # The VM source
+      name: "{{ new_srv_name }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+  - name: Clone VM Client with only source VM name - Linked Clone
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host: "{{ api_host }}"
+      clone: "{{ clone_name_cli }}" # The VM source
+      name: "{{ new_cli_name }}"  # The target VM name
+      node: "{{ node }}"
+      full: no
+  - name: Pause for 2 minutes to wait the VM Start
+    ansible.builtin.pause:
+      minutes: 5
+  - name: Start VM Server
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host    : "{{ api_host }}"
+      name        : "{{ new_srv_name }}"
+      node        : "{{ node }}"
+      state       : started
+  - name: Start VM Client
+    community.general.proxmox_kvm:
+      api_user: "{{ api_user }}"
+      api_password: "{{ api_password }}"
+      api_host    : "{{ api_host }}"
+      name        : "{{ new_cli_name }}"
+      node        : "{{ node }}"
+      state       : started
+  - name: Wait for Proxmox VMs to respond to SSH
+    ansible.builtin.wait_for:
+      host: "{{ item }}"
+      port: 22
+      delay: 5
+      timeout: 500
+      state: started
+    retries: 30
+    delay: 10
+    delegate_to: localhost
+    loop:
+      - 10.0.0.12
+      - 10.0.0.13
+- hosts: wserver
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Change the hostname to DC1
+    ansible.windows.win_hostname:
+      name: "{{ dc_hostname }}"
+  - name: Reboot with powershell
+    ansible.windows.win_powershell:
+      script: |
+        shutdown /r /t 10
+  - name: Wait for Proxmox VMs to respond to SSH
+    ansible.builtin.wait_for:
+      host: "{{ item }}"
+      port: 22
+      delay: 30
+      timeout: 500
+      state: started
+    retries: 30
+    delay: 10
+    delegate_to: localhost
+    loop:
+      - 10.0.0.12
+  - name: Install Active Directory
+    win_feature: >
+      name=AD-Domain-Services
+      include_management_tools=yes
+      include_sub_features=yes
+      state=present
+  - name: Create Domain
+    win_domain: >
+      dns_domain_name="{{ domain_name }}"
+      safe_mode_password="{{ recovery_password }}"
+  - name: Install DHCP with Powershell
+    ansible.windows.win_powershell:
+      script: |
+        Install-WindowsFeature DHCP -IncludeManagementTools
+        Add-DhcpServerv4Scope -name "Corpnet" -StartRange 10.0.0.1 -EndRange 10.0.0.254 -SubnetMask 255.255.255.0 -State Active
+        Add-DhcpServerv4ExclusionRange -ScopeID 10.0.0.0 -StartRange 10.0.0.1 -EndRange 10.0.0.15
+        Set-DhcpServerv4OptionValue -OptionID 3 -Value 10.0.0.1 -ScopeID 10.0.0.0 -ComputerName SRV-TEMPLATE
+        Set-DhcpServerv4OptionValue -DnsDomain pipo.miel -DnsServer 10.0.0.2
+  - name: Reboot with powershell
+    ansible.windows.win_powershell:
+      script: |
+        Restart-Computer 
