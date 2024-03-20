@@ -1,4 +1,5 @@
 # Vars for Proxmox Clients
+
 api_user: 'root@pam' # User of Proxmox API | Web Login User
 api_password: 'Pa$$w0rd' # Password of user above
 api_host: 'MAS' # API Host Node
@@ -10,17 +11,20 @@ new_srv_name: 'CloneSrvTest' # Name of the cloned Windows Server
 new_cli_name: 'CloneCliTest' # Name of the cloned Windows Client
 new_app_srv: 'CloneAppTest' # Name of the cloned Windows Server for various Apps
 node: 'MAS' # Proxmox Node
-ip_loop: 10.0.0.12 # IP of the VMs
-ip_loop_2: 10.0.0.13
+ip_loop: 10.0.0.12 # IP of the VMs for SSH wait
+ip_loop_2: 10.0.0.13 # IP of the VMs for SSH wait
+
 # Vars WIN SRV
-dc_hostname: 'SRV-DC1'
-domain_name: 'pipo.miel'
-recovery_password: 'Pa$$w0rd'
+
+dc_hostname: 'SRV-DC1' # Hostname for DC Server
+domain_name: 'pipo.miel' # Domain name
+recovery_password: 'Pa$$w0rd' # Recovery Password for AD Config
+
 # Vars DHCP Config
-dhcp_start_range: '10.0.0.1'
-dhcp_end_range: '10.0.0.254'
-subnet_mask: '255.255.255.0'
-scope_id: '10.0.0.0'
-exc_start_range: '10.0.0.1'
-exc_end_range: '10.0.0.15'
-dns_server: '10.0.0.2'
+dhcp_start_range: '10.0.0.1' # DHCP Start Range
+dhcp_end_range: '10.0.0.254' # DHCP End Range
+subnet_mask: '255.255.255.0' # DHCP Mask
+scope_id: '10.0.0.0' # ID for Scope
+exc_start_range: '10.0.0.1' # Exclusion Start Range 
+exc_end_range: '10.0.0.15' # Exclusion End Range
+dns_server: '10.0.0.2' # DNS Server for DHCP
