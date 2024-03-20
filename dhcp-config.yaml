@@ -1,4 +1,4 @@
-- hosts: wserver
+- hosts: wserverdhcp
   gather_facts: no
   vars_files:
     - vars.yaml
@@ -9,7 +9,61 @@
         $Username = 'pipo.miel\Administrateur'
         $Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
         $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
-        
+
         Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
             Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
         }
+  - name: Reboot the machine with all defaults
+    ansible.windows.win_reboot:
+
+
+##############################################################################################
+### DEBUG & TESTS ############################################################################
+##############################################################################################
+
+dc_hostname: 'SRV-DC1' # Hostname for DC Server
+domain_name: 'pipo.miel' # Domain name
+recovery_password: 'Pa$$w0rd' # Recovery Password for AD Config
+password_admin: 'Pa$$w0rd' # Domain Admin Password
+srv_ip: '10.0.0.12'
+
+---
+- hosts: wserverdhcp
+  gather_facts: no
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Test var ansible in powershell
+    ansible.windows.win_powershell:
+      script: |
+        $Username = "{{ domain_name }}\Administrateur"
+        $DomainName = "{{ domain_name }}"
+        $FQDN = "{{ dc_hostname }}.{{ domain_name }}" 
+
+        $Username = "{{ domain_name }}\Administrateur"
+        $Password = ConvertTo-SecureString "{{ password_admin }}" -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+        
+        Invoke-Command -ComputerName "{{ dc_hostname }}" -Credential $Credential -ScriptBlock {
+            Add-DhcpServerInDC -DnsName $FQDN -IPAddress "{{ srv_ip }}"
+        }
+
+  - name: Reboot the machine with all defaults
+    ansible.windows.win_reboot:
+
+
+### Script sans vars ###
+      script: |
+        $Username = 'pipo.miel\Administrateur'
+        $Password = ConvertTo-SecureString 'Pa$$w0rd' -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+
+        Invoke-Command -ComputerName SRV-DC1 -Credential $Credential -ScriptBlock {
+            Add-DhcpServerInDC -DnsName SRV-DC1.pipo.miel -IPAddress 10.0.0.12
+        }
+
+# Tests
+        $Username = "{{ domain_name }}\Administrateur"
+        $FilePath = "C:\{{ dc_hostname }}.{{ domain_name }}.txt"
+        New-Item -Path $FilePath -ItemType File | Out-Null
+        $Username | Out-File -FilePath $FilePath

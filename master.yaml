@@ -1,0 +1,9 @@
+---
+###################################################################################
+# Purpose       :   Master Playbook for MAS 3.2
+# Author        :   DGS
+# Date          :   20.03.2024
+# Version       :   1.0
+###################################################################################
+- import_playbook: clone-all-modif.yaml
+- import_playbook: config-dhcp.yaml
