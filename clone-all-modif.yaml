@@ -78,7 +78,7 @@
     ansible.builtin.wait_for:
       host: "{{ item }}"
       port: 22
-      delay: 30
+      delay: 10
       timeout: 500
       state: started
     retries: 30
@@ -90,7 +90,7 @@
     ansible.windows.win_domain: >
       dns_domain_name="{{ domain_name }}"
       safe_mode_password="{{ recovery_password }}"
-  - name: Install DHCP with Powershell
+  - name: Config DHCP with Powershell
     ansible.windows.win_powershell:
       script: |
         Add-DhcpServerv4Scope -name "MAS32" -StartRange 10.0.0.1 -EndRange 10.0.0.254 -SubnetMask 255.255.255.0 -State Active
@@ -109,7 +109,7 @@
   vars_files:
     - vars.yaml
   tasks:
-  - name: Config DHCP with Powershell
+  - name: Finish Config DHCP with Powershell
     ansible.windows.win_powershell:
       script: |
         $Username = 'pipo.miel\Administrateur'
@@ -121,7 +121,6 @@
         }
   - name: Reboot the machine with all defaults
     ansible.windows.win_reboot:
-
 
 #### EXECUTION : ansible-playbook -i inventory.cfg -i inventory2.cfg master.yaml
 
