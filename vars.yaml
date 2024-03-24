@@ -1,3 +1,10 @@
+###################################################################################
+# Purpose       :   Clone and modify proxmox templates for MAS 3.2
+# Author        :   DGS
+# Date          :   24.03.2024
+# Version       :   1.0
+###################################################################################
+
 # Vars for Proxmox Clients
 
 api_user: 'root@pam' # User of Proxmox API | Web Login User
@@ -22,7 +29,8 @@ recovery_password: 'Pa$$w0rd' # Recovery Password for AD Config
 password_admin: 'Pa$$w0rd' # Domain Admin Password
 srv_ip: '10.0.0.12'
 
-# Vars DHCP Config
+# Vars DHCP Config - Not used in current master
+
 dhcp_start_range: '10.0.0.1' # DHCP Start Range
 dhcp_end_range: '10.0.0.254' # DHCP End Range
 subnet_mask: '255.255.255.0' # DHCP Mask
