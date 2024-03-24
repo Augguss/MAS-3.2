@@ -220,37 +220,3 @@ ansible_user=ansible
 ansible_password=Passw0rd123
 ansible_connection=ssh
 ansible_shell_type=cmd
-
-##############################################################################################
-### DEBUG & TESTS ############################################################################
-##############################################################################################
-
-# host should be a member of domain ansible.vagrant; module will ensure the hostname is mydomainclient
-# and will use the passed credentials to join domain if necessary.
-# Ansible connection should use local credentials if possible.
-# If a reboot is required, the second task will trigger one and wait until the host is available.
-
----
-- hosts: wincli
-  gather_facts: false
-  tasks:
-  - ansible.windows.win_domain_membership:
-      dns_domain_name: pipo.miel
-      hostname: mydomainclient
-      domain_admin_user: Administrateur@pipo.miel
-      domain_admin_password: Pa$$w0rd
-      domain_ou_path: "OU=Computers,DC=pipo,DC=miel"
-      state: domain
-    register: domain_state
-
-  - ansible.windows.win_reboot:
-    when: domain_state.reboot_required
-
-
-
-
-  - name: Change the hostname to Cli1
-    ansible.windows.win_hostname:
-      name: Cli1
-  - name: Reboot the machine with all defaults
-    ansible.windows.win_reboot:
