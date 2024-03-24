@@ -22,7 +22,7 @@
       name: "{{ new_cli_name }}"  # The target VM name
       node: "{{ node }}"
       full: no
-  - name: Clone VM Client with only source VM name - Linked Clone
+  - name: Clone VM Server App with only source VM name - Linked Clone
     community.general.proxmox_kvm:
       api_user: "{{ api_user }}"
       api_password: "{{ api_password }}"
